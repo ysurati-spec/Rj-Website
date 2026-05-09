@@ -51,6 +51,17 @@ def go(page):
     st.session_state.proj_detail = None
     st.rerun()
 
+# Handle query param navigation from HTML nav links
+_qp = st.query_params.get("nav", None)
+if _qp and _qp != st.session_state.page:
+    st.session_state.page = _qp
+    st.session_state.form_sent = False
+    st.session_state.proj_detail = None
+    st.query_params.clear()
+    st.rerun()
+elif _qp:
+    st.query_params.clear()
+
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -283,47 +294,8 @@ div[data-testid="stFormSubmitButton"]>button,.stButton>button{background:var(--g
   letter-spacing:.25em!important;text-transform:uppercase!important;font-weight:600!important;
   border:none!important;border-radius:0!important;padding:14px 32px!important;width:100%;}
 div[data-testid="stFormSubmitButton"]>button:hover,.stButton>button:hover{background:var(--gold-light)!important;border:none!important;}
-/* Nav buttons must stay invisible despite the .stButton override above */
-#rj-nav-btn-wrap .stButton>button,
-#rj-nav-btn-wrap .stButton>button:hover{
-  background:transparent!important;
-  color:transparent!important;
-  border:none!important;
-  box-shadow:none!important;
-  opacity:0!important;
-}
 .stSuccess{background:rgba(184,147,90,.1)!important;border:1px solid var(--gold)!important;border-radius:0!important;color:var(--cream)!important;}
 .stError{background:rgba(180,60,60,.1)!important;border:1px solid rgba(180,60,60,.4)!important;border-radius:0!important;}
-
-
-/* Nav Streamlit buttons — invisible clickable overlay over the text nav */
-#rj-nav-btn-wrap{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  z-index:1001!important;height:72px!important;padding:0!important;
-  pointer-events:auto!important;
-  background:transparent!important;
-}
-#rj-nav-btn-wrap > div[data-testid="stHorizontalBlock"]{
-  position:fixed!important;top:0!important;left:0!important;right:0!important;
-  height:72px!important;padding:0 56px!important;margin:0!important;
-  background:transparent!important;gap:0!important;
-  align-items:stretch!important;
-}
-#rj-nav-btn-wrap [data-testid="column"]{
-  padding:0!important;
-  display:flex!important;align-items:stretch!important;
-}
-#rj-nav-btn-wrap button{
-  height:72px!important;width:100%!important;
-  border-radius:0!important;
-  pointer-events:auto!important;
-  background:transparent!important;
-  color:transparent!important;
-  border:none!important;
-  box-shadow:none!important;
-  opacity:0!important;
-  padding:0!important;
-}
 
 @media(max-width:900px){
   .rj-proj-grid,.rj-svc-grid,.rj-story-grid,.rj-contact-grid,.rj-footer-grid{grid-template-columns:1fr!important;}
@@ -369,7 +341,6 @@ window.addEventListener('load', function() {
 """, unsafe_allow_html=True)
 
 # ── NAV ───────────────────────────────────────────────────────────────────────
-logo_src = IMGS.get("logo_full", "")
 st.markdown(f"""
 <div class="rj-nav">
   <div class="rj-logo-wrap">
@@ -379,28 +350,14 @@ st.markdown(f"""
     </div>
   </div>
   <div style="display:flex;gap:36px;align-items:center;">
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Home</span>
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">About</span>
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Projects</span>
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Contact</span>
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Opportunities</span>
+    <a href="?nav=home"   style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);text-decoration:none;">Home</a>
+    <a href="?nav=about"  style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);text-decoration:none;">About</a>
+    <a href="?nav=projects" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);text-decoration:none;">Projects</a>
+    <a href="?nav=contact" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);text-decoration:none;">Contact</a>
+    <a href="?nav=opportunities" style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);text-decoration:none;">Opportunities</a>
   </div>
 </div>
 """, unsafe_allow_html=True)
-
-st.markdown('<div id="rj-nav-btn-wrap">', unsafe_allow_html=True)
-nav_c = st.columns([2.5, 1, 1, 1, 1, 1])
-with nav_c[1]:
-    if st.button("Home",     key="nav_home"):  go("home")
-with nav_c[2]:
-    if st.button("About",    key="nav_about"): go("about")
-with nav_c[3]:
-    if st.button("Projects", key="nav_proj"):  go("projects")
-with nav_c[4]:
-    if st.button("Contact",  key="nav_cta"):   go("contact")
-with nav_c[5]:
-    if st.button("Opportunities", key="nav_opp"): go("opportunities")
-st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ── PROJECT DATA ──────────────────────────────────────────────────────────────
@@ -740,10 +697,36 @@ if st.session_state.page == "home":
     with cc2:
         if st.button("Get In Touch", key="cta_home"): go("contact")
 
-
-
-
-# ══════════════════════════════════════════════════════════════════════════════
+    # BRAND STRIP — fills space before footer
+    st.markdown("""
+    <div style="background:var(--charcoal);border-top:1px solid rgba(184,147,90,.15);
+      padding:52px 60px;display:flex;justify-content:space-between;align-items:center;
+      flex-wrap:wrap;gap:32px;max-width:100%;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;
+          color:var(--white);margin-bottom:4px;">RJ Builders LLC</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.32em;
+          text-transform:uppercase;color:var(--gold);">General Contractor · Nashville, Tennessee</div>
+      </div>
+      <div style="display:flex;gap:48px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--warm-gray);margin-bottom:5px;">Phone</div>
+          <a href="tel:+16155550100" style="font-size:.9rem;color:var(--cream);text-decoration:none;">(615) 555-0100</a>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--warm-gray);margin-bottom:5px;">Email</div>
+          <a href="mailto:hello@rjbuilders.com" style="font-size:.9rem;color:var(--cream);text-decoration:none;">hello@rjbuilders.com</a>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--warm-gray);margin-bottom:5px;">License</div>
+          <div style="font-size:.9rem;color:var(--cream);">TN GC #ABC123456 · Fully Insured</div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 # PROJECTS PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.page == "projects":
