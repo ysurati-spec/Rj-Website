@@ -71,6 +71,16 @@ section[data-testid="stSidebar"]{display:none;}
 /* Remove extra top space Streamlit adds */
 .stApp > header{display:none!important;}
 div[data-testid="stAppViewBlockContainer"]{padding-top:0!important;}
+/* Remove Streamlit bottom padding that creates black empty space */
+.stApp [data-testid="stAppViewBlockContainer"]{padding-bottom:0!important;}
+.stApp .main .block-container{padding-bottom:0!important;}
+footer[data-testid="stAppViewFooter"]{display:none!important;}
+.stApp > div > div > div > div{padding-bottom:0!important;}
+.stApp{padding-bottom:0!important;}
+.main{padding-bottom:0!important;}
+[data-testid="stBottom"]{display:none!important;}
+/* Make footer flush — no gap */
+.rj-footer{margin-bottom:0!important;}
 
 /* NAV */
 .rj-nav{position:sticky;top:0;z-index:999;background:rgba(10,10,10,0.97);backdrop-filter:blur(20px);
@@ -273,18 +283,47 @@ div[data-testid="stFormSubmitButton"]>button,.stButton>button{background:var(--g
   letter-spacing:.25em!important;text-transform:uppercase!important;font-weight:600!important;
   border:none!important;border-radius:0!important;padding:14px 32px!important;width:100%;}
 div[data-testid="stFormSubmitButton"]>button:hover,.stButton>button:hover{background:var(--gold-light)!important;border:none!important;}
+/* Nav buttons must stay invisible despite the .stButton override above */
+#rj-nav-btn-wrap .stButton>button,
+#rj-nav-btn-wrap .stButton>button:hover{
+  background:transparent!important;
+  color:transparent!important;
+  border:none!important;
+  box-shadow:none!important;
+  opacity:0!important;
+}
 .stSuccess{background:rgba(184,147,90,.1)!important;border:1px solid var(--gold)!important;border-radius:0!important;color:var(--cream)!important;}
 .stError{background:rgba(180,60,60,.1)!important;border:1px solid rgba(180,60,60,.4)!important;border-radius:0!important;}
 
 
-/* Nav Streamlit buttons — hidden overlay */
-/* The nav buttons are wrapped in a div#rj-nav-btn-wrap injected just before the columns */
-#rj-nav-btn-wrap{position:fixed!important;top:0!important;left:0!important;right:0!important;
-  z-index:1001!important;height:72px!important;padding:0!important;opacity:0!important;
-  pointer-events:auto!important;}
-#rj-nav-btn-wrap > div, #rj-nav-btn-wrap [data-testid="stHorizontalBlock"]{
-  position:static!important;height:72px!important;padding:0 56px!important;margin:0!important;}
-#rj-nav-btn-wrap button{height:72px!important;border-radius:0!important;pointer-events:auto!important;background:transparent!important;}
+/* Nav Streamlit buttons — invisible clickable overlay over the text nav */
+#rj-nav-btn-wrap{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  z-index:1001!important;height:72px!important;padding:0!important;
+  pointer-events:auto!important;
+  background:transparent!important;
+}
+#rj-nav-btn-wrap > div[data-testid="stHorizontalBlock"]{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  height:72px!important;padding:0 56px!important;margin:0!important;
+  background:transparent!important;gap:0!important;
+  align-items:stretch!important;
+}
+#rj-nav-btn-wrap [data-testid="column"]{
+  padding:0!important;
+  display:flex!important;align-items:stretch!important;
+}
+#rj-nav-btn-wrap button{
+  height:72px!important;width:100%!important;
+  border-radius:0!important;
+  pointer-events:auto!important;
+  background:transparent!important;
+  color:transparent!important;
+  border:none!important;
+  box-shadow:none!important;
+  opacity:0!important;
+  padding:0!important;
+}
 
 @media(max-width:900px){
   .rj-proj-grid,.rj-svc-grid,.rj-story-grid,.rj-contact-grid,.rj-footer-grid{grid-template-columns:1fr!important;}
@@ -700,6 +739,8 @@ if st.session_state.page == "home":
     cc1, cc2, cc3 = st.columns([2.5, 1, 2.5])
     with cc2:
         if st.button("Get In Touch", key="cta_home"): go("contact")
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
