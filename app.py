@@ -49,6 +49,7 @@ def go(page):
     st.session_state.page = page
     st.session_state.form_sent = False
     st.session_state.proj_detail = None
+    st.rerun()
 
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
@@ -67,6 +68,9 @@ st.markdown("""
 section[data-testid="stSidebar"]{display:none;}
 .stApp{background:var(--black)!important;font-family:'Barlow',sans-serif;font-weight:300;color:var(--cream);}
 .block-container{padding:0!important;max-width:100%!important;}
+/* Remove extra top space Streamlit adds */
+.stApp > header{display:none!important;}
+div[data-testid="stAppViewBlockContainer"]{padding-top:0!important;}
 
 /* NAV */
 .rj-nav{position:sticky;top:0;z-index:999;background:rgba(10,10,10,0.97);backdrop-filter:blur(20px);
@@ -272,10 +276,15 @@ div[data-testid="stFormSubmitButton"]>button:hover,.stButton>button:hover{backgr
 .stSuccess{background:rgba(184,147,90,.1)!important;border:1px solid var(--gold)!important;border-radius:0!important;color:var(--cream)!important;}
 .stError{background:rgba(180,60,60,.1)!important;border:1px solid rgba(180,60,60,.4)!important;border-radius:0!important;}
 
+
 /* Nav Streamlit buttons — hidden overlay */
-div[data-testid="stHorizontalBlock"]:first-of-type{position:fixed!important;top:0!important;
-  left:0!important;right:0!important;z-index:1000!important;opacity:0!important;height:72px!important;padding:0 56px!important;}
-div[data-testid="stHorizontalBlock"]:first-of-type button{height:72px!important;border-radius:0!important;}
+/* The nav buttons are wrapped in a div#rj-nav-btn-wrap injected just before the columns */
+#rj-nav-btn-wrap{position:fixed!important;top:0!important;left:0!important;right:0!important;
+  z-index:1001!important;height:72px!important;padding:0!important;opacity:0!important;
+  pointer-events:auto!important;}
+#rj-nav-btn-wrap > div, #rj-nav-btn-wrap [data-testid="stHorizontalBlock"]{
+  position:static!important;height:72px!important;padding:0 56px!important;margin:0!important;}
+#rj-nav-btn-wrap button{height:72px!important;border-radius:0!important;pointer-events:auto!important;background:transparent!important;}
 
 @media(max-width:900px){
   .rj-proj-grid,.rj-svc-grid,.rj-story-grid,.rj-contact-grid,.rj-footer-grid{grid-template-columns:1fr!important;}
@@ -286,17 +295,45 @@ div[data-testid="stHorizontalBlock"]:first-of-type button{height:72px!important;
   .rj-section{padding:70px 22px!important;}
   .rj-hero-content{padding:0 22px 70px!important;}
   .rj-footer{padding:56px 22px 32px!important;}
+  /* Fix all inline-style grids used in sections */
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="grid-template-columns:2fr 1fr"],
+  div[style*="grid-template-columns: 2fr 1fr"]{
+    grid-template-columns:1fr!important;
+    gap:40px!important;
+  }
+  .rj-nav{padding:0 16px!important;}
+  .rj-nav > div:last-child{display:none!important;}
+  .rj-logo-text-main{font-size:1.1rem!important;}
+  .rj-proc-grid{grid-template-columns:1fr!important;}
+  .rj-vol-imgs{grid-template-columns:1fr!important;}
+  .rj-heading{font-size:2rem!important;}
+  .rj-cta-title{font-size:2.2rem!important;}
+  div[style*="padding:0 60px"]{padding:0 20px!important;}
+  div[style*="padding: 0 60px"]{padding:0 20px!important;}
+  div[style*="padding:0 60px 64px"]{padding:0 20px 50px!important;}
+  div[style*="padding:0 60px 68px"]{padding:0 20px 50px!important;}
+  div[style*="padding:0 60px 72px"]{padding:0 20px 50px!important;}
 }
 </style>
 """, unsafe_allow_html=True)
-
+st.markdown("""
+<script>
+// Scroll to top on any Streamlit rerun
+window.addEventListener('load', function() {
+  window.scrollTo(0, 0);
+  // Also fix scroll on the parent if in iframe
+  try { window.parent.scrollTo(0, 0); } catch(e) {}
+});
+</script>
+""", unsafe_allow_html=True)
 
 # ── NAV ───────────────────────────────────────────────────────────────────────
 logo_src = IMGS.get("logo_full", "")
 st.markdown(f"""
 <div class="rj-nav">
   <div class="rj-logo-wrap">
-    <img class="rj-logo-img" src="{logo_src}" alt="RJ Builders Logo">
     <div>
       <span class="rj-logo-text-main">RJ Builders</span>
       <span class="rj-logo-text-sub">Nashville, Tennessee</span>
@@ -307,10 +344,12 @@ st.markdown(f"""
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">About</span>
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Projects</span>
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Contact</span>
+    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,235,227,.7);">Opportunities</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown('<div id="rj-nav-btn-wrap">', unsafe_allow_html=True)
 nav_c = st.columns([2.5, 1, 1, 1, 1, 1])
 with nav_c[1]:
     if st.button("Home",     key="nav_home"):  go("home")
@@ -322,6 +361,7 @@ with nav_c[4]:
     if st.button("Contact",  key="nav_cta"):   go("contact")
 with nav_c[5]:
     if st.button("Opportunities", key="nav_opp"): go("opportunities")
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ── PROJECT DATA ──────────────────────────────────────────────────────────────
@@ -498,7 +538,7 @@ if st.session_state.page == "home":
             hero_img = IMGS.get(proj["hero"], "")
             badge_cls = proj["badge"]
             st.markdown(f"""
-            <div class="rj-proj-card">
+            <div class="rj-proj-card" style="margin-bottom:0;">
               <img src="{hero_img}" alt="{proj['name']}">
               <div class="rj-proj-info">
                 <div><span class="rj-proj-badge {badge_cls}">{proj['status']}</span></div>
@@ -508,7 +548,7 @@ if st.session_state.page == "home":
               </div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button(f"View Project →", key=f"feat_{proj['name']}"):
+            if st.button(f"View Project →", key=f"feat_{proj['name']}", use_container_width=True):
                 st.session_state.proj_detail = proj['name']
                 go("projects")
 
@@ -602,6 +642,48 @@ if st.session_state.page == "home":
       </div>
     </section>
     """, unsafe_allow_html=True)
+
+    # OPPORTUNITIES TEASER
+    st.markdown("""
+    <section class="rj-section" style="background:var(--black);padding-top:80px;padding-bottom:80px;">
+      <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;">
+        <div>
+          <div class="rj-label">Join the Team</div>
+          <h2 class="rj-heading">Explore <em>Opportunities</em></h2>
+          <div class="rj-divider"></div>
+          <p class="rj-body">
+            RJ Builders is always looking for skilled, hardworking people who take pride in their
+            craft — project managers, superintendents, estimators, and skilled trade contractors.
+          </p>
+          <p class="rj-body">
+            We are a family company and we treat our people like partners. If you share our
+            commitment to quality, we want to hear from you.
+          </p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <div style="background:var(--graphite);padding:36px 28px;border-left:2px solid var(--gold);">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--white);margin-bottom:8px;">Project Manager</div>
+            <div style="font-size:.8rem;color:var(--warm-gray);">Nashville, TN</div>
+          </div>
+          <div style="background:var(--graphite);padding:36px 28px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--white);margin-bottom:8px;">Superintendent</div>
+            <div style="font-size:.8rem;color:var(--warm-gray);">Nashville, TN</div>
+          </div>
+          <div style="background:var(--graphite);padding:36px 28px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--white);margin-bottom:8px;">Estimator</div>
+            <div style="font-size:.8rem;color:var(--warm-gray);">Nashville, TN</div>
+          </div>
+          <div style="background:var(--graphite);padding:36px 28px;border-left:2px solid var(--gold);">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--white);margin-bottom:8px;">Trade Contractors</div>
+            <div style="font-size:.8rem;color:var(--warm-gray);">Nashville, TN</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    """, unsafe_allow_html=True)
+    opp_c1, opp_c2, opp_c3 = st.columns([3, 1, 3])
+    with opp_c2:
+        if st.button("View Openings", key="home_opp"): go("opportunities")
 
     # CTA
     cta_bg = IMGS.get("general1", "")
@@ -997,7 +1079,6 @@ elif st.session_state.page == "contact":
         logo_src = IMGS.get("logo_icon", "")
         st.markdown(f"""
         <div style="padding-top:6px;">
-          <img src="{logo_src}" style="height:52px;width:auto;filter:brightness(1.2);margin-bottom:24px;display:block;" alt="RJ Builders">
           <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:300;
             color:var(--white);margin-bottom:10px;">RJ Builders LLC</h3>
           <p style="font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.3em;
@@ -1137,7 +1218,10 @@ st.markdown(f"""
 <footer class="rj-footer">
   <div class="rj-footer-grid">
     <div>
-      <img src="{logo_src}" class="rj-footer-logo" alt="RJ Builders">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;
+        color:var(--white);letter-spacing:.04em;margin-bottom:4px;">RJ Builders</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:.35em;
+        text-transform:uppercase;color:var(--gold);margin-bottom:16px;">Nashville, Tennessee</div>
       <div class="rj-footer-tagline">"Designed to Last. Built to Perform."</div>
       <p class="rj-footer-blurb">
         RJ Builders LLC is a full-service general contracting and construction company
